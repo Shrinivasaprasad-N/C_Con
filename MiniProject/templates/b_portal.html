@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crop Connect - Bidder Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='b_portal.css') }}" />
+</head>
+<body>
+
+  <!-- 🌾 Navbar -->
+  <nav class="navbar">
+    <div class="navbar-left">
+      <input type="text" id="search" placeholder="Search crop..." />
+      <input type="text" id="locationInput" placeholder="Enter location..." style="margin-left: 10px;" />
+      <button id="filterBtn" style="margin-left: 6px; background: white; color:#2e7d32; border:none; padding:7px 10px; border-radius:4px; cursor:pointer;">
+        🔍 Filter
+      </button>
+    </div>
+
+    <div class="navbar-right">
+      <button onclick="window.location.href='/wishlist'">❤️ My Wishlist (<span id="wishlist-count">0</span>)</button>
+      <button onclick="window.location.href='/profile'">👤 Profile</button>
+    </div>
+  </nav>
+
+  <!-- 🌿 Crop Listing: ID must match JS -->
+  <section id="crops-container" class="crop-container"></section>
+
+  <!-- 🌾 No Crops Message -->
+  <div id="noCropsMessage" class="no-crops-message" style="display:none;">
+    <h3>No crops found in this area</h3>
+    <p>Try searching again with a different location or keyword.</p>
+  </div>
+
+  <!-- 🌱 Crop Details Popup -->
+  <div id="detailsPopup" class="details-popup" style="display:none;">
+    <div class="details-content">
+      <h3 id="cropName"></h3>
+      <p><strong>Quantity:</strong> <span id="cropQuantity"></span></p>
+      <p><strong>Quality:</strong> <span id="cropQuality"></span></p>
+      <p><strong>Location:</strong> <span id="cropLocation"></span></p>
+      <p><strong>Date & Time:</strong> <span id="cropTime"></span></p>
+      <p id="biddingStatus"></p>
+      <button class="close-btn" onclick="closePopup()">Close</button>
+    </div>
+  </div>
+
+  <!-- 📜 JS Script -->
+  <script src="{{ url_for('static', filename='b_portal.js') }}"></script>
+
+</body>
+</html>

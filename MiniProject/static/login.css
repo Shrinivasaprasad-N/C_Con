@@ -1,0 +1,204 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== BODY STYLING ===== */
+/* This creates the main background and centers everything */
+body {
+    font-family: Arial, sans-serif;
+    /* Background with farm field image */
+    background-image: url('https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1600&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Add a dark overlay to make text readable */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: -1;
+}
+
+/* ===== LOGIN BOX ===== */
+/* The white box that contains the login form */
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+}
+
+/* ===== LANGUAGE BUTTON ===== */
+.language-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.language-button:hover {
+    background-color: #45a049;
+}
+
+/* ===== HEADER SECTION ===== */
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Farm icon styling */
+.farm-icon {
+    font-size: 50px;
+    margin-bottom: 10px;
+}
+
+/* Main heading */
+.header h1 {
+    color: #2d5016;
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+/* Subtitle text */
+.header p {
+    color: #666;
+    font-size: 14px;
+}
+
+/* ===== FORM GROUPS ===== */
+/* Each input field container */
+.input-group {
+    margin-bottom: 20px;
+}
+
+/* Label styling */
+.input-group label {
+    display: block;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* Input field styling */
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Input field when clicked/focused */
+.input-group input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+/* ===== CHECKBOX & LINK SECTION ===== */
+.form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+/* Remember me checkbox */
+.remember-box {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Forgot password link */
+.forgot-link {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+/* ===== LOGIN BUTTON ===== */
+.login-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Button hover effect */
+.login-button:hover {
+    background-color: #45a049;
+}
+
+/* ===== SIGNUP SECTION ===== */
+.signup-section {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+.signup-section a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.signup-section a:hover {
+    text-decoration: underline;
+}
+
+/* ===== MESSAGE BOXES ===== */
+/* Error message box (red) */
+.error-box {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    display: none;
+    font-size: 14px;
+}
+
+/* Success message box (green) */
+.success-box {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    display: none;
+    font-size: 14px;
+}

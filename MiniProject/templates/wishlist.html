@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Wishlist - Crop Bidding</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 20px; font-size: 28px; }
+  #wishlistContainer { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+  .wishlist-card { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); width: 250px; padding: 15px; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; position: relative; }
+  .wishlist-card:hover { transform: scale(1.02); }
+  .wishlist-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; cursor: pointer; }
+  .wishlist-card h3 { margin: 10px 0 5px 0; font-size: 18px; text-align: center; }
+  .wishlist-info p { margin: 2px 0; font-size: 14px; text-align: center; }
+  .button-group { margin-top: 10px; display: flex; gap: 10px; width: 100%; }
+  .button-group button { flex: 1; padding: 5px 0; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+  .bid-now { background: #4CAF50; color: #fff; }
+  .bid-now:hover { background: #45a049; }
+  .remove { background: #f44336; color: #fff; }
+  .remove:hover { background: #da190b; }
+  .no-wishlist { text-align: center; font-size: 18px; color: #555; margin-top: 50px; }
+  .countdown { font-size: 14px; color: #ff5722; font-weight: bold; margin-top: 5px; text-align: center; }
+
+  /* Popup Styles */
+  #detailsPopup { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; padding: 10px; }
+  .popup-content { background: #fff; padding: 20px; width: 400px; max-width: 95%; border-radius: 10px; position: relative; overflow-y: auto; max-height: 90vh; }
+  .popup-content img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
+  .popup-content h2 { margin: 10px 0; font-size: 22px; text-align: center; }
+  .popup-content p { margin: 5px 0; font-size: 16px; }
+  .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; background: none; border: none; }
+  @media (max-width: 768px) { .wishlist-card { width: 45%; } }
+  @media (max-width: 480px) { .wishlist-card { width: 100%; } h1 { font-size: 24px; } .popup-content h2 { font-size: 20px; } .popup-content p { font-size: 14px; } }
+</style>
+</head>
+<body>
+<h1>My Wishlist</h1>
+<div id="wishlistContainer"></div>
+
+<!-- Details Popup -->
+<div id="detailsPopup">
+  <div class="popup-content">
+    <button class="close-btn" onclick="closePopup()">&times;</button>
+    <img id="popupImage" src="" alt="Crop Image">
+    <h2 id="popupName"></h2>
+    <p><strong>Price:</strong> ₹<span id="popupPrice"></span> / kg</p>
+    <p><strong>Quantity:</strong> <span id="popupQuantity"></span> kg</p>
+    <p><strong>Quality:</strong> <span id="popupQuality"></span></p>
+    <p><strong>Bidding Time:</strong> <span id="popupTime"></span></p>
+    <p><strong>Notes:</strong> <span id="popupNotes"></span></p>
+    <div style="margin-top:10px; display:flex; gap:10px;">
+      <button class="bid-now" id="popupBidBtn">Bid Now</button>
+      <button class="remove" id="popupRemoveBtn">Remove</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+const currentUser = JSON.parse(localStorage.getItem("loggedInUser")) || { email: "bidder@example.com" };
+
+// Remove expired crops
+function filterExpired() {
+  const now = new Date();
+  wishlist = wishlist.filter(crop => {
+    const bidTime = new Date(crop.datetime || crop.time);
+    return now <= (new Date(bidTime.getTime() + 60*60*1000));
+  });
+  localStorage.setItem("wishlist", JSON.stringify(wishlist));
+}
+
+// Display wishlist
+function displayWishlist() {
+  filterExpired();
+  const container = document.getElementById("wishlistContainer");
+  container.innerHTML = "";
+
+  if (wishlist.length === 0) {
+    container.innerHTML = '<div class="no-wishlist">No crops in your wishlist.</div>';
+    return;
+  }
+
+  wishlist.forEach(crop => {
+    const cropId = crop._id || crop.id;
+    const bidTime = new Date(crop.datetime || crop.time);
+    const biddingEnd = new Date(bidTime.getTime() + 60*60*1000);
+
+    // Check winner info
+    const winners = JSON.parse(localStorage.getItem("auctionWinners")) || {};
+    const userIsWinner = winners[cropId] === currentUser.email;
+    const biddingOver = new Date() > biddingEnd;
+
+    const card = document.createElement("div");
+    card.className = "wishlist-card";
+
+    card.innerHTML = `
+      <img src="${crop.image}" alt="${crop.name}" onclick="showDetails('${cropId}')">
+      <h3>${crop.name}</h3>
+      <div class="wishlist-info">
+        <p><strong>Price:</strong> ₹${crop.price} / kg</p>
+        <p><strong>Quantity:</strong> ${crop.quantity} kg</p>
+        <p><strong>Quality:</strong> ${crop.quality}</p>
+        <p class="countdown" id="countdown-${cropId}">${biddingOver ? (userIsWinner ? "🎉 You Won!" : "Bidding Closed") : "Calculating..."}</p>
+      </div>
+      <div class="button-group">
+        <button class="bid-now" ${biddingOver ? "disabled" : ""} onclick="startBidding('${cropId}')">Bid Now</button>
+        <button class="remove" onclick="removeFromWishlist('${cropId}')">Remove</button>
+      </div>
+    `;
+    container.appendChild(card);
+
+    if (!biddingOver) startCountdown(cropId, biddingEnd);
+  });
+}
+
+// Countdown timer
+function startCountdown(cropId, endTime) {
+  const countdownEl = document.getElementById(`countdown-${cropId}`);
+  const interval = setInterval(() => {
+    const now = new Date();
+    const diff = endTime - now;
+    if (diff <= 0) {
+      countdownEl.innerText = "Bidding Closed";
+      displayWishlist();
+      clearInterval(interval);
+      return;
+    }
+    const hrs = Math.floor(diff / (1000*60*60));
+    const mins = Math.floor((diff % (1000*60*60)) / (1000*60));
+    const secs = Math.floor((diff % (1000*60)) / 1000);
+    countdownEl.innerText = `Time Left: ${hrs}h ${mins}m ${secs}s`;
+  }, 1000);
+}
+
+// Show details popup
+function showDetails(cropId) {
+  const crop = wishlist.find(c => (c._id || c.id) == cropId);
+  if (!crop) return;
+
+  const popup = document.getElementById("detailsPopup");
+  document.getElementById("popupImage").src = crop.image;
+  document.getElementById("popupName").innerText = crop.name;
+  document.getElementById("popupPrice").innerText = crop.price;
+  document.getElementById("popupQuantity").innerText = crop.quantity;
+  document.getElementById("popupQuality").innerText = crop.quality;
+  document.getElementById("popupTime").innerText = new Date(crop.datetime || crop.time).toLocaleString();
+  document.getElementById("popupNotes").innerText = crop.notes || "No additional notes.";
+
+  const winners = JSON.parse(localStorage.getItem("auctionWinners")) || {};
+  const userIsWinner = winners[cropId] === currentUser.email;
+  const bidTime = new Date(crop.datetime || crop.time);
+  const biddingOver = new Date() > (new Date(bidTime.getTime() + 60*60*1000));
+
+  const bidBtn = document.getElementById("popupBidBtn");
+  bidBtn.disabled = biddingOver;
+  bidBtn.onclick = () => startBidding(cropId);
+
+  const removeBtn = document.getElementById("popupRemoveBtn");
+  removeBtn.onclick = () => { removeFromWishlist(cropId); closePopup(); };
+
+  popup.style.display = "flex";
+}
+
+function closePopup() {
+  document.getElementById("detailsPopup").style.display = "none";
+}
+
+// Start bidding
+function startBidding(cropId) {
+  const crop = wishlist.find(c => (c._id || c.id) == cropId);
+  if (!crop) return;
+  localStorage.setItem("currentBidCrop", JSON.stringify(crop));
+  window.location.href = "/bid_portal"; // redirect to Flask route
+}
+
+// Remove from wishlist
+function removeFromWishlist(cropId) {
+  wishlist = wishlist.filter(c => (c._id || c.id) != cropId);
+  localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  displayWishlist();
+}
+
+displayWishlist();
+</script>
+</body>
+</html>

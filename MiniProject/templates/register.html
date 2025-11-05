@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Connect - Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button id="languageButton" class="lang-btn">ಕನ್ನಡ</button>
+            <h1 id="title">Create Account</h1>
+            <p id="subtitle">Join Crop Connect today</p>
+        </div>
+
+        <form id="registrationForm" class="form">
+            <div class="form-group">
+                <label id="usernameLabel" for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter username" required>
+            </div>
+
+            <div class="form-group">
+                <label id="emailLabel" for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter email" required>
+            </div>
+
+            <div class="form-group">
+                <label id="passwordLabel" for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter password" required>
+            </div>
+
+            <div class="form-group">
+                <label id="roleLabel" for="role">Who are you?</label>
+                <select id="role" name="role" required>
+                    <option value="">Select your role</option>
+                    <option value="farmer">Farmer</option>
+                    <option value="bidder">Bidder</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <button type="submit" id="registerButton" class="submit-btn">Register</button>
+        </form>
+
+        <div class="footer">
+            <p id="loginText">
+                Already have an account? <a href="{{ url_for('login') }}" id="loginLink">Login</a>
+            </p>
+        </div>
+
+        <!-- Messages -->
+        <div id="successMessage" class="message success" style="display: none;"></div>
+        <div id="errorMessage" class="message error" style="display: none;"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='register.js') }}"></script>
+</body>
+</html>

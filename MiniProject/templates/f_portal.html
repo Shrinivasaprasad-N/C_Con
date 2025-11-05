@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crop Management System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='f_portal.css') }}" />
+  <style>
+    /* ✅ Scroll Fix Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-y: auto;
+      padding: 2rem 1rem;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.3s ease;
+      margin-bottom: 2rem;
+    }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
+    }
+
+    .image-preview-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .image-preview-container img {
+      width: 96px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+
+    .popup-gallery img {
+      width: 25%;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .form-actions { display: flex; justify-content: space-between; margin-top: 20px; }
+    .form-actions button { padding: 10px 16px; border: none; cursor: pointer; border-radius: 5px; }
+    .form-actions button[type="button"] { background: #ccc; }
+    .form-actions button[type="submit"] { background: #28a745; color: white; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ✅ Chat Button Style */
+    #chatWithBidderBtn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-weight: 500;
+    }
+    #chatWithBidderBtn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <div class="user-profile">
+        <img src="https://via.placeholder.com/40" alt="User Profile" class="profile-pic" />
+        <span class="username">Farmer User</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <button class="upload-btn" id="uploadBtn">Upload Crop</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <h1>My Crops</h1>
+    <div class="crops-container" id="cropsContainer"></div>
+  </main>
+
+  <!-- Crop Details Popup -->
+  <div class="popup-overlay" id="popupOverlay" style="display: none;">
+    <div class="popup-content">
+      <button class="close-btn" id="closePopup">&times;</button>
+      <div class="popup-body">
+        <div class="popup-gallery" id="popupImageGallery"></div>
+        <div class="crop-details">
+          <h2 id="popupTitle">Name</h2>
+          <div class="detail-item"><label>Type:</label><span id="popupType"></span></div>
+          <div class="detail-item"><label>Quality:</label><span id="popupQuality"></span></div>
+          <div class="detail-item"><label>Price (₹/kg):</label><span id="popupPrice"></span></div>
+          <div class="detail-item"><label>Quantity (kg):</label><span id="popupQuantity"></span></div>
+          <div class="detail-item"><label>Date & Time:</label><span id="popupDateTime"></span></div>
+          <div class="detail-item"><label>Status:</label><span id="popupStatus"></span></div>
+          <div class="detail-item"><label>Sold:</label><span id="popupSold"></span></div>
+          <div class="detail-item"><label>Location:</label><span id="popupLocation"></span></div>
+          <div class="detail-item"><label>Notes:</label><p id="popupNotes"></p></div>
+
+          <!-- ✅ Chat Button -->
+          <button id="chatWithBidderBtn" style="display:none;">💬 Chat with Bidder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Crop Modal -->
+  <div class="modal-overlay" id="uploadModal" style="display: none;">
+    <div class="modal-content">
+      <h2>Upload New Crop</h2>
+      <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="cropName">Name:</label>
+          <input type="text" id="cropName" name="name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="cropType">Type:</label>
+          <input type="text" id="cropType" name="type" placeholder="e.g., vegetable, fruit" required />
+        </div>
+
+        <div class="form-group">
+          <label for="cropQuality">Quality:</label>
+          <select id="cropQuality" name="quality" required>
+            <option value="">Select Quality</option>
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cropPrice">Price (₹/kg):</label>
+          <input type="number" id="cropPrice" name="price" required min="0" step="0.01" />
+        </div>
+
+        <div class="form-group">
+          <label for="cropQuantity">Quantity (kg):</label>
+          <input type="number" id="cropQuantity" name="quantity" required min="1" />
+        </div>
+
+        <div class="form-group">
+          <label for="plantedDateTime">Date & Time:</label>
+          <input type="datetime-local" id="plantedDateTime" name="datetime" />
+        </div>
+
+        <div class="form-group">
+          <label for="cropLocation">Location:</label>
+          <input type="text" id="cropLocation" name="location" placeholder="Enter your village/city/district" required />
+        </div>
+
+        <div class="form-group">
+          <label for="cropImage">Crop Images (select multiple):</label>
+          <input type="file" id="cropImage" name="cropImages" accept="image/*" multiple />
+          <div id="imagePreviewContainer" class="image-preview-container" style="display:none;"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="cropNotes">Notes:</label>
+          <textarea id="cropNotes" name="notes" rows="3" placeholder="Add any additional notes..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="cancelUpload">Cancel</button>
+          <button type="submit">Upload Crop</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='f_portal.js') }}"></script>
+</body>
+</html>

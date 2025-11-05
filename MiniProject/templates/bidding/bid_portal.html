@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bidding Page - Crop_Connect</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='bid_portal.css') }}">
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f2f5; margin:0; padding:0; }
+  .navbar { display:flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #4CAF50; color:white; }
+  .navbar button { background:white; color:#4CAF50; border:none; padding:5px 10px; cursor:pointer; border-radius:5px; font-weight:bold; }
+  .bidding-container { display:flex; justify-content: space-around; align-items: flex-start; margin: 20px; flex-wrap: wrap; }
+  .bidding-left, .bidding-right { background:white; border-radius:10px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.2); margin:10px; }
+  .bidding-left { flex:1 1 300px; max-width:400px; }
+  .bidding-right { flex:1 1 300px; max-width:400px; display:flex; justify-content:center; align-items:center; }
+  .bidding-right img { max-width:100%; border-radius:10px; }
+  input[type=number] { width:100%; padding:8px; margin-top:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc; }
+  button.place-bid { background:#4CAF50; color:white; border:none; padding:10px; width:100%; border-radius:5px; cursor:pointer; font-weight:bold; }
+  button.place-bid:disabled { background:#888; cursor:not-allowed; }
+  .info { margin:5px 0; font-size:16px; }
+  #timer { font-weight:bold; color:#ff5722; margin-top:10px; }
+  #winnerInfo { font-weight:bold; color:green; margin-top:10px; }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <h2>🌾 Crop Bidding</h2>
+  <button onclick="window.location.href='{{ url_for('bidder_portal') }}'">⬅️ Back</button>
+</div>
+
+<div class="bidding-container">
+  <div class="bidding-left">
+    <h2 id="cropName"></h2>
+    <p class="info"><strong>Quantity:</strong> <span id="cropQuantity"></span> kg</p>
+    <p class="info"><strong>Quality:</strong> <span id="cropQuality"></span></p>
+    <p class="info"><strong>Base Price:</strong> ₹<span id="basePrice"></span></p>
+    <p class="info"><strong>Current Highest Bid:</strong> ₹<span id="currentPrice"></span></p>
+    <p id="timer"></p>
+    <input type="number" id="bidInput" placeholder="Enter your bid">
+    <button class="place-bid" id="placeBidBtn" onclick="placeBid()">Place Bid</button>
+    <p id="winnerInfo"></p>
+  </div>
+  <div class="bidding-right">
+    <img id="cropImage" alt="Crop Image">
+  </div>
+</div>
+
+<script>
+const currentUser = JSON.parse(localStorage.getItem("loggedInUser")) || { email: "bidder@example.com" };
+let crop = JSON.parse(localStorage.getItem("currentBidCrop")) || {};
+let auctionWinners = JSON.parse(localStorage.getItem("auctionWinners")) || {};
+let highestBids = JSON.parse(localStorage.getItem("highestBids")) || {}; // { cropId: {email, amount} }
+
+function displayCrop() {
+  document.getElementById("cropName").innerText = crop.name;
+  document.getElementById("cropQuantity").innerText = crop.quantity;
+  document.getElementById("cropQuality").innerText = crop.quality;
+  document.getElementById("basePrice").innerText = crop.price;
+  document.getElementById("cropImage").src = crop.image;
+
+  const cropId = crop._id || crop.id;
+  if (!highestBids[cropId]) highestBids[cropId] = { email: null, amount: crop.price };
+  document.getElementById("currentPrice").innerText = highestBids[cropId].amount;
+
+  const bidTime = new Date(crop.datetime || crop.time);
+  const endTime = new Date(bidTime.getTime() + 60*60*1000);
+  startCountdown(endTime, cropId);
+}
+
+function startCountdown(endTime, cropId) {
+  const timerEl = document.getElementById("timer");
+  const winnerEl = document.getElementById("winnerInfo");
+
+  const interval = setInterval(() => {
+    const now = new Date();
+    const diff = endTime - now;
+
+    if (diff <= 0) {
+      clearInterval(interval);
+      document.getElementById("placeBidBtn").disabled = true;
+
+      const winner = auctionWinners[cropId] || highestBids[cropId].email;
+      if (winner === currentUser.email) {
+        winnerEl.innerText = "🎉 Congratulations! You won the bid!";
+      } else if (winner) {
+        winnerEl.innerText = "Bidding ended. Winner: " + winner;
+      } else {
+        winnerEl.innerText = "Bidding ended. No bids placed.";
+      }
+      timerEl.innerText = "Bidding Closed";
+      return;
+    }
+
+    const hrs = Math.floor(diff / (1000*60*60));
+    const mins = Math.floor((diff % (1000*60*60)) / (1000*60));
+    const secs = Math.floor((diff % (1000*60)) / 1000);
+    timerEl.innerText = `Time Left: ${hrs}h ${mins}m ${secs}s`;
+  }, 1000);
+}
+
+function placeBid() {
+  const cropId = crop._id || crop.id;
+  const bidAmount = Number(document.getElementById("bidInput").value);
+  const currentHighest = highestBids[cropId].amount;
+
+  if (bidAmount <= currentHighest) {
+    alert(`Your bid must be higher than ₹${currentHighest}`);
+    return;
+  }
+
+  highestBids[cropId] = { email: currentUser.email, amount: bidAmount };
+  auctionWinners[cropId] = currentUser.email;
+  localStorage.setItem("highestBids", JSON.stringify(highestBids));
+  localStorage.setItem("auctionWinners", JSON.stringify(auctionWinners));
+
+  document.getElementById("currentPrice").innerText = bidAmount;
+  alert("Bid placed successfully!");
+}
+
+displayCrop();
+</script>
+</body>
+</html>

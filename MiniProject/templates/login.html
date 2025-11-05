@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Login | Crop Connect</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}" />
+</head>
+<body>
+  <div class="login-box">
+    <button class="language-button" id="languageButton" onclick="toggleLanguage()">ಕನ್ನಡ</button>
+
+    <div class="header">
+      <div class="farm-icon">🌾</div>
+      <h2 id="title">User Login</h2>
+      <p id="subtitle">Login to access your account</p>
+    </div>
+
+    <div id="errorBox" class="error-box"></div>
+    <div id="successBox" class="success-box"></div>
+
+    <form id="loginForm">
+      <div class="input-group">
+        <label id="emailLabel" for="emailInput">Email Address</label>
+        <input type="email" id="emailInput" name="email" placeholder="Enter your email" required />
+      </div>
+
+      <div class="input-group">
+        <label id="passwordLabel" for="passwordInput">Password</label>
+        <input type="password" id="passwordInput" name="password" placeholder="Enter your password" required />
+      </div>
+
+      <div class="input-group">
+        <label id="roleLabel" for="roleSelect">Who are you?</label>
+        <select id="roleSelect" name="role" required>
+          <option value="">Select role</option>
+          <option value="farmer">Farmer</option>
+          <option value="bidder">Bidder</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <label>
+        <input type="checkbox" id="rememberCheck" />
+        <span id="rememberLabel">Remember me</span>
+      </label>
+
+      <button type="submit" id="loginButton" class="login-button">Login</button>
+    </form>
+
+    <div class="signup-section">
+      <p id="signupText">
+        New user? <a href="{{ url_for('register') }}" id="signupLink">Create an account</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='login.js') }}"></script>
+</body>
+</html>
